@@ -12,6 +12,19 @@
   <:item title="Name"><%= @board.name %></:item>
 </.list>
 
+<h3>Cards</h3>
+<ul>
+  <li>
+    <.form for={@form} phx-submit="add_card" phx-hook="FormReset" id="form">
+      <input type="text" name="card_title" value={@form[:data].value} phx-reset="" />
+      <button type="submit">Create</button>
+    </.form>
+  </li>
+  <li :for={card <- @cards}>
+    <%= card %>
+  </li>
+</ul>
+
 <.back navigate={~p"/boards"}>Back to boards</.back>
 
 <.modal :if={@live_action == :edit} id="board-modal" show on_cancel={JS.patch(~p"/boards/#{@board}")}>
