@@ -22,6 +22,7 @@
   </li>
   <li :for={card <- @cards}>
     <%= card %>
+    <button phx-click="remove" value={card}>Remove</button>
   </li>
 </ul>
 

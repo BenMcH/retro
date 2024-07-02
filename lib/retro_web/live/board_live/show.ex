@@ -20,7 +20,7 @@ defmodule RetroWeb.BoardLive.Show do
      |> assign(:form, input_form())}
   end
 
-  defp input_form, do: to_form(%{"data" => "foo", "id" => :rand.uniform(2000)})
+  defp input_form, do: to_form(%{"data" => "", "id" => :rand.uniform(2000)})
 
   defp page_title(:show), do: "Show Board"
   defp page_title(:edit), do: "Edit Board"
@@ -35,6 +35,15 @@ defmodule RetroWeb.BoardLive.Show do
   end
 
   @impl true
+  def handle_event("remove", %{"value" => title}, socket) do
+    %{assigns: %{page_id: id}} = socket
+
+    if String.trim(title) !== "", do: Phoenix.PubSub.broadcast(Retro.PubSub, id, {:remove_card, title})
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info({:new_card, title}, socket) do
     %{assigns: %{cards: cards}} = socket
 
@@ -42,5 +51,15 @@ defmodule RetroWeb.BoardLive.Show do
     |> assign(:cards, [title] ++ cards)
 
     {:noreply, assign(socket, cards: [title] ++ cards, form: input_form())}
+  end
+
+  @impl true
+  def handle_info({:remove_card, title}, socket) do
+    %{assigns: %{cards: cards}} = socket
+
+    socket = socket
+    |> assign(:cards, cards -- [title])
+
+    {:noreply, socket}
   end
 end
