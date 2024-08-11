@@ -1,34 +1,55 @@
-<.header>
-  Board <%= @board.id %>
-  <:subtitle>This is a board record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/boards/#{@board}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit board</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.list>
-  <:item title="Name"><%= @board.name %></:item>
-</.list>
-
-<h3>Cards</h3>
-<ul>
-  <li>
-    <.form for={@form} phx-submit="add_card" phx-hook="FormReset" id="form">
-      <input type="text" name="card_title" value={@form[:data].value} phx-reset="" />
-      <button type="submit">Create</button>
+<h2 class="text-4xl flex flex-row"><%= @board.name %></h2>
+<div class="flex flex-row overflow-x-scroll">
+  <div :for={key <- @keys} id={key} class="px-1 w-80">
+    <h3 class="text-xl"><%= key %></h3>
+    <.form
+      for={@form}
+      phx-submit="add_card"
+      phx-hook="FormReset"
+      id="form"
+      class="flex flex-row justify-between gap-1"
+    >
+      <input type="hidden" name="column" value={key} />
+      <input
+        type="text"
+        name="card_title"
+        value={@form[:data].value}
+        phx-reset=""
+        class="rounded-md"
+      />
+      <button
+        class="border-2 bg-blue-800 text-white hover:bg-blue-900 p-2 rounded-md"
+        type="submit"
+      >
+        Create
+      </button>
     </.form>
-  </li>
-  <li :for={card <- @cards}>
-    <%= card %>
-    <button phx-click="remove" value={card}>Remove</button>
-  </li>
-</ul>
-
+    <ul id={"#{key}-cards"} phx-update="stream" class="flex flex-col gap-2 mt-2">
+      <li
+        :for={{dom_id, card} <- @streams[key]}
+        id={dom_id}
+        class="flex flex-row justify-between items-center border-2 p-1 border-slate-300"
+      >
+        <span class="max-w-64"><%= card.title %></span>
+        <button
+          class="border-2 bg-red-800 text-white hover:bg-red-900 px-2 py-1 rounded-md"
+          phx-click="remove"
+          value={card.id}
+        >
+          Remove
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
 <.back navigate={~p"/boards"}>Back to boards</.back>
 
-<.modal :if={@live_action == :edit} id="board-modal" show on_cancel={JS.patch(~p"/boards/#{@board}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="board-modal"
+  show
+  on_cancel={JS.patch(~p"/boards/#{@board}")}
+>
   <.live_component
     module={RetroWeb.BoardLive.FormComponent}
     id={@board.id}
