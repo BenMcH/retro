@@ -3,6 +3,7 @@ defmodule RetroWeb.BoardLive.Index do
 
   alias Retro.Boards
   alias Retro.Boards.Board
+  alias Retro.Cards
 
   @impl true
   def mount(_params, _session, socket) do
@@ -40,6 +41,10 @@ defmodule RetroWeb.BoardLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     board = Boards.get_board!(id)
+
+    IO.inspect(board)
+    Cards.delete_by_board_id(id)
+
     {:ok, _} = Boards.delete_board(board)
 
     {:noreply, stream_delete(socket, :boards, board)}

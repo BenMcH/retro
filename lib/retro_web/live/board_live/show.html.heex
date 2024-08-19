@@ -1,5 +1,5 @@
 <h2 class="text-4xl flex flex-row"><%= @board.name %></h2>
-<div class="flex flex-row overflow-x-scroll">
+<div class="flex-1 flex flex-row overflow-x-scroll">
   <div :for={key <- @keys} id={key} class="px-1 w-80">
     <h3 class="text-xl"><%= key %></h3>
     <.form
@@ -40,6 +40,23 @@
         </button>
       </li>
     </ul>
+  </div>
+  <div class="px-1 w-80">
+    <h3 class="text-xl">New Category</h3>
+    <.form
+      phx-submit="add_category"
+      phx-hook="FormReset"
+      id="form1"
+      class="flex flex-row justify-between gap-1"
+    >
+      <input type="text" name="category_title" phx-reset="" class="rounded-md" />
+      <button
+        class="border-2 bg-blue-800 text-white hover:bg-blue-900 p-2 rounded-md"
+        type="submit"
+      >
+        Create
+      </button>
+    </.form>
   </div>
 </div>
 <.back navigate={~p"/boards"}>Back to boards</.back>

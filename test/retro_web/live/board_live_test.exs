@@ -93,7 +93,7 @@ defmodule RetroWeb.BoardLiveTest do
       assert show_live |> element("a", "Edit") |> render_click() =~
                "Edit Board"
 
-      assert_patch(show_live, ~p"/boards/#{board}/show/edit")
+      assert_patch(show_live, ~p"/boards/#{board}/edit")
 
       assert show_live
              |> form("#board-form", board: @invalid_attrs)

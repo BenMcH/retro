@@ -4,6 +4,7 @@ defmodule Retro.Boards.Board do
 
   schema "boards" do
     field :name, :string
+    field :categories, {:array, :string}, default: []
 
     timestamps(type: :utc_datetime)
   end
@@ -11,7 +12,7 @@ defmodule Retro.Boards.Board do
   @doc false
   def changeset(board, attrs) do
     board
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :categories])
     |> validate_required([:name])
   end
 end
