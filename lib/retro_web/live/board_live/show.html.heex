@@ -44,12 +44,19 @@
   <div class="px-1 w-80">
     <h3 class="text-xl">New Category</h3>
     <.form
+      for={@form}
       phx-submit="add_category"
       phx-hook="FormReset"
       id="form1"
       class="flex flex-row justify-between gap-1"
     >
-      <input type="text" name="category_title" phx-reset="" class="rounded-md" />
+      <input
+        type="text"
+        name="category_title"
+        phx-reset=""
+        class="rounded-md"
+        value={@form[:data].value}
+      />
       <button
         class="border-2 bg-blue-800 text-white hover:bg-blue-900 p-2 rounded-md"
         type="submit"
@@ -73,6 +80,6 @@
     title={@page_title}
     action={@live_action}
     board={@board}
-    patch={~p"/boards/#{@board}"}
+    patch={~p"/boards/#{@board.id}"}
   />
 </.modal>

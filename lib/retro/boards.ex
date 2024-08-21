@@ -37,6 +37,8 @@ defmodule Retro.Boards do
   """
   def get_board!(id), do: Repo.get!(Board, id)
 
+  def get_board(slug), do: Repo.get_by(Board, slug: slug)
+
   @doc """
   Creates a board.
 
@@ -50,7 +52,8 @@ defmodule Retro.Boards do
 
   """
   def create_board(attrs \\ %{}) do
-    %Board{}
+    # TODO: use slug in urls to remove integer ids
+    %Board{slug: "#{Faker.Color.name()}-#{Faker.Vehicle.body_style()}-#{Faker.StarWars.planet()}"}
     |> Board.changeset(attrs)
     |> Repo.insert()
   end

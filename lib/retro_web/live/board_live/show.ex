@@ -7,12 +7,22 @@ defmodule RetroWeb.BoardLive.Show do
   alias Retro.Boards
 
   @impl true
-  def mount(%{"id" => page_id}, _session, socket) do
-    {id, _} = page_id |> Integer.parse()
+  def mount(%{"id" => slug}, _session, socket) do
+    id = Integer.parse(slug)
 
-    Phoenix.PubSub.subscribe(Retro.PubSub, page_id)
+    board =
+      if id === :error do
+        Boards.get_board(slug)
+      else
+        id = id |> elem(0)
+        Boards.get_board!(id)
+      end
 
-    board = Boards.get_board!(id)
+    slug = board.slug
+
+    Phoenix.PubSub.subscribe(Retro.PubSub, slug)
+
+    id = board.id
     cards = Cards.list_cards(id)
     categories = board.categories || []
     categories = categories |> Enum.map(&String.to_atom(&1))
@@ -21,7 +31,6 @@ defmodule RetroWeb.BoardLive.Show do
       socket
       |> assign(:keys, categories)
       |> assign(:page_title, page_title(socket.assigns.live_action))
-      |> assign(:page_id, page_id)
       |> assign(:board_id, id)
       |> assign(:board, board)
       |> assign(:form, input_form())
@@ -55,42 +64,38 @@ defmodule RetroWeb.BoardLive.Show do
 
   @impl true
   def handle_event("add_card", %{"card_title" => title, "column" => column}, socket) do
-    %{assigns: %{page_id: page_id, board_id: id}} = socket
+    %{assigns: %{board: board}} = socket
 
-    {:ok, card} = Cards.create_card(%{title: title, column: column, board_id: id})
+    {:ok, card} = Cards.create_card(%{title: title, column: column, board_id: board.id})
 
-    Phoenix.PubSub.broadcast(Retro.PubSub, page_id, {:add_card, card})
+    Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:add_card, card})
 
     {:noreply, socket |> assign(form: input_form())}
   end
 
   @impl true
   def handle_event("remove", %{"value" => id}, socket) do
-    %{assigns: %{page_id: page_id}} = socket
-
-    {id, ""} = id |> Integer.parse()
+    %{assigns: %{board: board}} = socket
 
     {:ok, card} = id |> Cards.get_card!() |> Cards.delete_card()
 
-    Phoenix.PubSub.broadcast(Retro.PubSub, page_id, {:remove_card, card})
+    Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:remove_card, card})
 
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("add_category", %{"category_title" => name}, socket) do
-    %{assigns: %{page_id: page_id, board: board}} = socket
+    %{assigns: %{board: board}} = socket
 
     unless name in board.categories do
       categories = board.categories || []
       categories = categories ++ [name]
       {:ok, board} = Boards.update_board(board, %{categories: categories})
-      IO.inspect(board)
-      DBConnection.PrepareStream
-      Phoenix.PubSub.broadcast(Retro.PubSub, page_id, {:update_board, board})
+      Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:update_board, board})
     end
 
-    {:noreply, socket}
+    {:noreply, socket |> assign(form: input_form())}
   end
 
   @impl true
@@ -106,9 +111,16 @@ defmodule RetroWeb.BoardLive.Show do
 
   @impl true
   def handle_info({:update_board, board}, socket) do
-    {:noreply,
-     socket
-     |> assign(:keys, board.categories |> Enum.map(&String.to_atom(&1)))
-     |> assign(:board, board)}
+    socket =
+      socket
+      |> assign(:keys, board.categories |> Enum.map(&String.to_atom(&1)))
+      |> assign(:board, board)
+
+    socket =
+      Enum.reduce(board.categories, socket, fn category, socket ->
+        stream(socket, String.to_atom(category), [])
+      end)
+
+    {:noreply, socket}
   end
 end

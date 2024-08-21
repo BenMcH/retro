@@ -10,7 +10,7 @@
 <.table
   id="boards"
   rows={@streams.boards}
-  row_click={fn {_id, board} -> JS.navigate(~p"/boards/#{board}") end}
+  row_click={fn {_id, board} -> JS.navigate(~p"/boards/#{board.slug}") end}
 >
   <:col :let={{_id, board}} label="Name"><%= board.name %></:col>
   <:action :let={{_id, board}}>
@@ -29,7 +29,12 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="board-modal" show on_cancel={JS.patch(~p"/boards")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="board-modal"
+  show
+  on_cancel={JS.patch(~p"/boards")}
+>
   <.live_component
     module={RetroWeb.BoardLive.FormComponent}
     id={@board.id || :new}

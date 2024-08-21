@@ -4,6 +4,7 @@ defmodule Retro.Boards.Board do
 
   schema "boards" do
     field :name, :string
+    field :slug, :string
     field :categories, {:array, :string}, default: []
 
     timestamps(type: :utc_datetime)
