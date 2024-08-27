@@ -52,8 +52,11 @@ defmodule Retro.Boards do
 
   """
   def create_board(attrs \\ %{}) do
-    # TODO: use slug in urls to remove integer ids
-    %Board{slug: "#{Faker.Color.name()}-#{Faker.Vehicle.body_style()}-#{Faker.StarWars.planet()}"}
+    slug =
+      "#{Faker.Color.name()}-#{Faker.Vehicle.body_style()}-#{Faker.StarWars.planet()}"
+      |> String.replace(" ", "-")
+
+    %Board{slug: slug}
     |> Board.changeset(attrs)
     |> Repo.insert()
   end
