@@ -99,6 +99,18 @@ defmodule RetroWeb.BoardLive.Show do
   end
 
   @impl true
+  def handle_event("delete_category", %{"value" => name}, socket) do
+    %{assigns: %{board: board}} = socket
+
+    categories = board.categories -- [name]
+    {:ok, board} = Boards.update_board(board, %{categories: categories})
+    Cards.delete_by_board_id_and_column(board.id, name)
+    Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:update_board, board})
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info({:add_card, card}, socket) do
     socket = socket |> stream_insert(card.column |> String.to_atom(), card)
     {:noreply, socket}

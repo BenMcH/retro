@@ -1,7 +1,16 @@
 <h2 class="text-4xl flex flex-row"><%= @board.name %></h2>
 <div class="flex-1 flex flex-row overflow-x-scroll">
   <div :for={key <- @keys} id={key} class="px-1 w-80">
-    <h3 class="text-xl"><%= key %></h3>
+    <div class="flex flex-row justify-between">
+      <h3 class="text-xl"><%= key %></h3>
+      <button
+        class="px-2 py-1 bg-red-800 text-neutral-100 rounded-md"
+        phx-click="delete_category"
+        value={key}
+      >
+        Delete
+      </button>
+    </div>
     <.form
       for={@form}
       phx-submit="add_card"

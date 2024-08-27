@@ -99,6 +99,10 @@ defmodule Retro.Cards do
     Repo.delete_all(Card |> where(board_id: ^board_id))
   end
 
+  def delete_by_board_id_and_column(board_id, column) do
+    Repo.delete_all(Card |> where(board_id: ^board_id, column: ^column))
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking Card changes.
 
