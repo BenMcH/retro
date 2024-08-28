@@ -25,7 +25,6 @@ defmodule RetroWeb.BoardLive.Show do
     id = board.id
     cards = Cards.list_cards(id)
     categories = board.categories || []
-    categories = categories |> Enum.map(&String.to_atom(&1))
 
     socket =
       socket
@@ -34,13 +33,7 @@ defmodule RetroWeb.BoardLive.Show do
       |> assign(:board_id, id)
       |> assign(:board, board)
       |> assign(:form, input_form())
-
-    socket =
-      categories
-      |> Enum.reduce(socket, fn category, socket ->
-        cards = cards |> Enum.filter(&(&1.column === to_string(category)))
-        socket |> stream(category, cards)
-      end)
+      |> stream(:cards, cards)
 
     {:ok, socket}
   end
@@ -112,26 +105,21 @@ defmodule RetroWeb.BoardLive.Show do
 
   @impl true
   def handle_info({:add_card, card}, socket) do
-    socket = socket |> stream_insert(card.column |> String.to_atom(), card)
+    socket = socket |> stream_insert(:cards, card)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:remove_card, card}, socket) do
-    {:noreply, socket |> stream_delete(card.column |> String.to_atom(), card)}
+    {:noreply, socket |> stream_delete(:cards, card)}
   end
 
   @impl true
   def handle_info({:update_board, board}, socket) do
     socket =
       socket
-      |> assign(:keys, board.categories |> Enum.map(&String.to_atom(&1)))
+      |> assign(:keys, board.categories)
       |> assign(:board, board)
-
-    socket =
-      Enum.reduce(board.categories, socket, fn category, socket ->
-        stream(socket, String.to_atom(category), [])
-      end)
 
     {:noreply, socket}
   end

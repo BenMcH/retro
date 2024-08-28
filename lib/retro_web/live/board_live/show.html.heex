@@ -15,7 +15,7 @@
       for={@form}
       phx-submit="add_card"
       phx-hook="FormReset"
-      id="form"
+      id={"#{key}-form"}
       class="flex flex-row justify-between gap-1"
     >
       <input type="hidden" name="column" value={key} />
@@ -35,7 +35,8 @@
     </.form>
     <ul id={"#{key}-cards"} phx-update="stream" class="flex flex-col gap-2 mt-2">
       <li
-        :for={{dom_id, card} <- @streams[key]}
+        :for={{dom_id, card} <- @streams.cards}
+        :if={card.column === key}
         id={dom_id}
         class="flex flex-row justify-between items-center border-2 p-1 border-slate-300"
       >
