@@ -1,6 +1,6 @@
 <h2 class="text-4xl flex flex-row"><%= @board.name %></h2>
 <div class="flex-1 flex flex-row overflow-x-scroll">
-  <div :for={key <- @keys} id={key} class="px-1 w-80">
+  <div :for={key <- @board.categories} id={key} class="px-1 w-80">
     <div class="flex flex-row justify-between">
       <h3 class="text-xl"><%= key %></h3>
       <button

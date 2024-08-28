@@ -8,43 +8,20 @@ defmodule RetroWeb.BoardLive.Show do
 
   @impl true
   def mount(%{"id" => slug}, _session, socket) do
-    id = Integer.parse(slug)
+    board = Boards.get_board(slug)
 
-    board =
-      if id === :error do
-        Boards.get_board(slug)
-      else
-        id = id |> elem(0)
-        Boards.get_board!(id)
-      end
+    Phoenix.PubSub.subscribe(Retro.PubSub, board.slug)
 
-    slug = board.slug
-
-    Phoenix.PubSub.subscribe(Retro.PubSub, slug)
-
-    id = board.id
-    cards = Cards.list_cards(id)
-    categories = board.categories || []
+    cards = Cards.list_cards(board.id)
 
     socket =
       socket
-      |> assign(:keys, categories)
       |> assign(:page_title, page_title(socket.assigns.live_action))
-      |> assign(:board_id, id)
       |> assign(:board, board)
       |> assign(:form, input_form())
       |> stream(:cards, cards)
 
     {:ok, socket}
-  end
-
-  @impl true
-  def handle_params(%{"id" => id}, _, socket) do
-    Phoenix.PubSub.subscribe(Retro.PubSub, id)
-
-    {:noreply,
-     socket
-     |> assign(:form, input_form())}
   end
 
   defp input_form, do: to_form(%{"data" => "", "id" => :rand.uniform(2000)})
@@ -98,15 +75,14 @@ defmodule RetroWeb.BoardLive.Show do
     categories = board.categories -- [name]
     {:ok, board} = Boards.update_board(board, %{categories: categories})
     Cards.delete_by_board_id_and_column(board.id, name)
-    Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:update_board, board})
 
+    Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:update_board, board})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:add_card, card}, socket) do
-    socket = socket |> stream_insert(:cards, card)
-    {:noreply, socket}
+    {:noreply, socket |> stream_insert(:cards, card)}
   end
 
   @impl true
@@ -116,11 +92,6 @@ defmodule RetroWeb.BoardLive.Show do
 
   @impl true
   def handle_info({:update_board, board}, socket) do
-    socket =
-      socket
-      |> assign(:keys, board.categories)
-      |> assign(:board, board)
-
-    {:noreply, socket}
+    {:noreply, socket |> assign(:board, board)}
   end
 end
