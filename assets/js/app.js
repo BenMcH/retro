@@ -30,7 +30,6 @@ const Hooks = {}
 */
 Hooks.FormReset = {
   updated() {
-    console.log('here');
     let input = this.el.querySelector('[phx-reset]:not(.invalid-feedback)')
     let value = input.getAttribute('phx-reset')
     input.value = value

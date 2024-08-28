@@ -59,8 +59,7 @@ defmodule RetroWeb.BoardLive.Show do
     %{assigns: %{board: board}} = socket
 
     unless name in board.categories do
-      categories = board.categories || []
-      categories = categories ++ [name]
+      categories = board.categories ++ [name]
       {:ok, board} = Boards.update_board(board, %{categories: categories})
       Phoenix.PubSub.broadcast(Retro.PubSub, board.slug, {:update_board, board})
     end
